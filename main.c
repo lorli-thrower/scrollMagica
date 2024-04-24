@@ -120,7 +120,7 @@ void processInputs(char *inputs, struct Player *player)
 			playerMoveRight(player);
 			break;
 		case NOT_MOVE:
-			// does nothing, but takes up a character in the inputs array
+			playerNotMove(player);
 			break;
 		case CREATE_SCROLL:
 			break;
