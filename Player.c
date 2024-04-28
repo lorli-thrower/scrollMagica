@@ -1,6 +1,13 @@
 #include "Player.h"
 #include <stdio.h>
 
+void playerInventoryAllocate(struct Player* player)
+{
+	player->inventory = calloc(SCROLL_AMOUNT, sizeof(player->inventory[0]));
+	for (int i = 0; i < SCROLL_AMOUNT; i ++)
+		player->inventory[i] = calloc(SCROLL_SIZE, sizeof(player->inventory[i][0]));
+}
+
 void playerMoveUp(struct Player *player) 
 {
 	player->y -= 1;
@@ -27,6 +34,14 @@ void playerNotMove(struct Player *player)
 	// And the most importantly, what do you move when you don't?
 	// Do you even have to do anything? Or will flowing down the
 	// river really help you in this situation?
-	// I guess void isn't that bad after all->
+	// I guess void isn't that bad after all
 	(void*)player;
+}
+int playerScrollAdd(struct Player* player, char scroll[127]) // adds scroll to player's inventory 
+{
+	int i;
+	for (i = 0; player->inventory[i][0] != '\0'; i++)
+		if (i >= SCROLL_AMOUNT - 1) return -1;
+	memcpy(player->inventory[i], scroll, 127 * sizeof(char));
+	return 0;
 }
