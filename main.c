@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include "Player.h"
 
-#define BOARD_HIGHT 46
-#define BOARD_WIDTH 213
-//#define BOARD_HIGHT 73
-//#define BOARD_WIDTH 273
+#define RENDER 0
+
+#define BOARD_WIDTH 191
+#define BOARD_HIGHT 63
 
 #define CH_PLAYER		'@'
 
@@ -40,7 +40,7 @@ int main()
 	playerInventoryAllocate(&player1);
 	player1.x = BOARD_WIDTH / 2;
 	player1.y = BOARD_HIGHT / 2;
-	char* inputs = malloc(sizeof(char) * 255);
+	char* inputs = calloc(255, sizeof(char));
 	int length = 255;
 	char **board = malloc(sizeof(char*) * BOARD_HIGHT);
 	for (int i = 0; i < BOARD_HIGHT; i++)
@@ -53,7 +53,9 @@ int main()
 	while (running)
 	{
 		render(board, &player1);
-		printf("1: %s 2: %s 3: %s", player1.inventory[0], player1.inventory[1], player1.inventory[2]);
+		for (int i = 0; i < SCROLL_AMOUNT; i++)
+			printf("%d: %s ", i+1, player1.inventory[i]);
+		printf("You act: ");
 		readLine(inputs, length);
 		processInputs(inputs, &player1);
 	}
@@ -62,6 +64,7 @@ int main()
 
 void render(char **board, struct Player *player)
 {
+#if RENDER
 	for (int i = 0; i < BOARD_HIGHT; i++)
 	{
 		for (int j = 0; j < BOARD_WIDTH; j++)
@@ -72,27 +75,51 @@ void render(char **board, struct Player *player)
 		}
 		printf("\n");
 	}
+#endif
 }
 
 void processInputs(char *inputs, struct Player *player)
 {
-	char c = 0;
+	char c = ' ';
 	// making sure that player can't move up and up-right at the same time
-	// (removing contriditing moves)
-	char* finilized = NULL;
+	// (removing contriditing or same actions)
+	for (int i = 0; inputs[i] != '\0'; i++)
+		for (int j = i + 1; inputs[j] != '\0'; j++)
+			if (inputs[i] == inputs[j])
+			{
+				inputs[i] = ' ';
+				break;
+			}
+	char* finilizedMovement = NULL;
 	for (int i = 0; c != '\0'; i++)
 	{
 		c = inputs[i];
 		if (c == UP || c == DOWN || c == LEFT || c == RIGHT || c == UP_LEFT || c == DOWN_LEFT ||
 			c == DOWN_RIGHT || c == UP_RIGHT || c == UP_LEFT || c == NOT_MOVE)
 		{
-			if (finilized != NULL)
-				*finilized = ' ';
-			finilized = &inputs[i];
+			if (finilizedMovement != NULL)
+				*finilizedMovement = ' ';
+			finilizedMovement = &inputs[i];
 		}
 	}
-	free(finilized);
+	// removing spaces so that the above actually works with scrolls too
+	for (int i = 0; inputs[i] != '\0'; i++)
+	{
+		if (inputs[i] == ' ')
+		{
+			int j, k = i;
+			for (j = i + 1; inputs[j] == ' '; j++);
+			while (inputs[j] != '\0')
+			{
+				inputs[k] = inputs[j];
+				inputs[j] = 0;
+				k++;
+				j++;
+			}
+		}
+	}
 	// executing commands
+	printf("Inputs: %s", inputs);
 	while (inputs[0] != '\0')
 	{
 		switch(inputs[0])
@@ -130,8 +157,11 @@ void processInputs(char *inputs, struct Player *player)
 			break;
 		case CREATE_SCROLL:
 			{
-				char scroll[127];
-				int i = 0;
+				int i;
+				char scroll[SCROLL_SIZE];
+				for (i = 0; i < SCROLL_SIZE; i++)
+					scroll[i] = 0;
+				i = 0;
 				while (inputs[1] == SCROLL_BIG ||  inputs[1] == SCROLL_MEDIUM ||  inputs[1] == SCROLL_SMALL ||  inputs[1] == SCROLL_FIRE)   
 				{
 					scroll[i] = inputs[1];
@@ -142,10 +172,12 @@ void processInputs(char *inputs, struct Player *player)
 			}
 			break;
 		case FIRE_SCROLL:
+
 			break;
 		case CHAIN_SCROLLS:
 			break;
 		}
+		inputs[0] = 0;
 		inputs++;
 	}
 }
