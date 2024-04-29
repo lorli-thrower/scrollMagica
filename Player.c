@@ -37,11 +37,12 @@ void playerNotMove(struct Player *player)
 	// I guess void isn't that bad after all
 	(void*)player;
 }
-int playerScrollAdd(struct Player* player, char scroll[127]) // adds scroll to player's inventory 
+
+int playerScrollAdd(struct Player* player, char scroll[SCROLL_SIZE]) // adds scroll to player's inventory 
 {
 	int i;
 	for (i = 0; player->inventory[i][0] != '\0'; i++)
 		if (i >= SCROLL_AMOUNT - 1) return -1;
-	memcpy(player->inventory[i], scroll, 127 * sizeof(char));
+	memcpy(player->inventory[i], scroll, SCROLL_SIZE * sizeof(char));
 	return 0;
 }
