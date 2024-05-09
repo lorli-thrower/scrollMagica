@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include "Player.h"
 
-#define RENDER 0
+#define RENDER 1
 
 #define BOARD_WIDTH 191
-#define BOARD_HIGHT 63
+#define BOARD_HIGHT 61
 
 #define CH_PLAYER		'@'
 
@@ -21,12 +21,13 @@
 #define NOT_MOVE		'.' 
 #define CREATE_SCROLL	's' 
 #define FIRE_SCROLL		'f' 
-#define CHAIN_SCROLLS	'c'
 
-#define SCROLL_BIG		'd'
+#define SCROLL_SMALL	'd'
 #define SCROLL_MEDIUM	'f'
-#define SCROLL_SMALL	'g'
-#define SCROLL_FIRE		'r'
+#define SCROLL_BIG		'g'
+#define SCROLL_FIRE		'e'
+
+#define SPELL_SPEED     10
 
 bool running = true;
 
@@ -83,14 +84,8 @@ void processInputs(char *inputs, struct Player *player)
 	char c = ' ';
 	// making sure that player can't move up and up-right at the same time
 	// (removing contriditing or same actions)
-	for (int i = 0; inputs[i] != '\0'; i++)
-		for (int j = i + 1; inputs[j] != '\0'; j++)
-			if (inputs[i] == inputs[j])
-			{
-				inputs[i] = ' ';
-				break;
-			}
 	char* finilizedMovement = NULL;
+	char* finilizedScroll   = NULL;
 	for (int i = 0; c != '\0'; i++)
 	{
 		c = inputs[i];
@@ -100,6 +95,11 @@ void processInputs(char *inputs, struct Player *player)
 			if (finilizedMovement != NULL)
 				*finilizedMovement = ' ';
 			finilizedMovement = &inputs[i];
+		} else if (c == SCROLL_SMALL || c == SCROLL_MEDIUM || c == SCROLL_BIG)
+		{
+			if (finilizedScroll != NULL)
+				*finilizedScroll = ' ';
+			finilizedScroll = &inputs[i];
 		}
 	}
 	// removing spaces so that the above actually works with scrolls too
@@ -174,8 +174,6 @@ void processInputs(char *inputs, struct Player *player)
 		case FIRE_SCROLL:
 
 			break;
-		case CHAIN_SCROLLS:
-			break;
 		}
 		inputs[0] = 0;
 		inputs++;
@@ -191,5 +189,4 @@ void readLine(char* inputs, int length)
 		inputs[i] = c;
 	}
 }
-
 
